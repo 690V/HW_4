@@ -9,28 +9,62 @@ output:
 ```{r setup, include=FALSE}
 library(flexdashboard)
 ```
-
-Column {data-width=650}
------------------------------------------------------------------------
-
-### Chart A
-
 ```{r}
-
+setwd("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4")
+```
+```{r}
+rm(list = ls())
+library(readxl)
+arrests <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx")
+sheet2 <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx", sheet = 2)
+```
+```{r}
+head(arrests)
+```
+```{r}
+names(arrests)
+```
+```{r}
+# checking data types
+str(arrests,width = 50,strict.width='cut')
+```
+```{r}
+unique(arrests$Race)
+unique(arrests$`Arrest Type`)
+unique(arrests$Sex)
 ```
 
-Column {data-width=350}
------------------------------------------------------------------------
-
-### Chart B
-
 ```{r}
-
+# contingency table of counts
+# independent variable in the columns
+# dependent variable in the rows
+(ArrestTypeRace = table(arrests$Race, arrests$`Arrest Type`))
+```
+```{r}
+library(magrittr) # for %>%
+(ArrestTypeRace_mgCol=prop.table(ArrestTypeRace,
+                            margin = 2)%>%round(.,3))
 ```
 
-### Chart C
+```{r}
+#making a data frame from the contingency table
+ArrestTypeRaceDF=as.data.frame(ArrestTypeRace)
+names(ArrestTypeRaceDF)=c("Race","Arrest_Type","counts")
+
+#adding marginal shares as percentages:
+ArrestTypeRaceDF$pctCol=100*as.data.frame(ArrestTypeRace_mgCol)[,3]
+ArrestTypeRaceDF
+```
 
 ```{r}
-
+library(ggplot2)
 ```
+```{r}
+ggplot(data=ArrestTypeRaceDF, 
+             aes(x=daytime, y=counts)) + geom_bar(stat="identity")
+
+aes(x = Arrest_Type, y = pctCol, fill = Race)
+```
+
+
 
