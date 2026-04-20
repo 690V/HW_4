@@ -1,0 +1,97 @@
+---
+title: "Homework 4"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+```{r}
+setwd("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4")
+```
+```{r}
+rm(list = ls())
+library(readxl)
+arrests <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx")
+sheet2 <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx", sheet = 2)
+```
+```{r}
+head(arrests)
+```
+```{r}
+names(arrests)
+```
+```{r}
+# checking data types
+str(arrests,width = 50,strict.width='cut')
+```
+```{r}
+unique(arrests$Race)
+unique(arrests$`Arrest Type`)
+unique(arrests$Sex)
+```
+
+```{r}
+# contingency table of counts
+# independent variable in the columns
+# dependent variable in the rows
+(ArrestTypeSex = table(arrests$Sex, arrests$`Arrest Type`))
+```
+```{r}
+library(magrittr) # for %>%
+(ArrestTypeSex_mgCol=prop.table(ArrestTypeSex,
+                            margin = 2)%>%round(.,3))
+```
+
+```{r}
+#making a data frame from the contingency table
+ArrestTypeSexDF=as.data.frame(ArrestTypeSex)
+names(ArrestTypeSexDF)=c("Sex","Arrest_Type","counts")
+
+#adding marginal shares as percentages:
+ArrestTypeSexDF$pctCol=100*as.data.frame(ArrestTypeSex_mgCol)[,3]
+ArrestTypeSexDF
+```
+
+```{r}
+library(ggplot2)
+```
+```{r}
+ggplot(data=ArrestTypeSexDF, 
+             aes(x=Arrest_Type, y=counts)) + geom_bar(stat="identity")
+
+```
+```{r}
+base1=ggplot(data=ArrestTypeSexDF,
+             aes(x=Arrest_Type, y=counts,
+                 fill=Sex)) # fill brings a legend
+barDodge1= base1 +  geom_bar(stat="identity",
+                            position ='dodge') 
+barDodge1 
+```
+```{r}
+base1_pct=ggplot(data=ArrestTypeSexDF,
+             aes(x=Arrest_Type, y=pctCol,
+                 fill=reorder(Sex,pctCol))) # reordering
+barDodge1_pct= base1_pct +  geom_bar(stat="identity",
+                            position ='dodge') 
+barDodge1_pct 
+```
+
+```{r}
+barDodge1_pct + labs(title = "Arrest Type Distribution Varies by Sex",
+                 subtitle = "Massachusetts Arrest Data",
+                 x = "Arrest Type",
+                 y = "Share of All Arrests (%)",
+                 fill = "Sex",
+                 caption = "Source: Mass Arrests Dataset") + 
+            theme_light()
+```
+
+
+
+
+
