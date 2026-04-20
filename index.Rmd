@@ -1,14 +1,24 @@
 ---
-title: "Cat-Cat Visualization"
+title: "HW 4 - Bivariate Visualizations"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
-    vertical_layout: fill
 ---
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(flexdashboard)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(readr)
+library(ggrepel)
+library(vcd)
+library(glue)
+library(scales)
 ```
+
+
 ```{r}
 setwd("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4")
 ```
@@ -18,21 +28,10 @@ library(readxl)
 arrests <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx")
 sheet2 <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx", sheet = 2)
 ```
-```{r}
-head(arrests)
-```
-```{r}
-names(arrests)
-```
-```{r}
-# checking data types
-str(arrests,width = 50,strict.width='cut')
-```
-```{r}
-unique(arrests$Race)
-unique(arrests$`Arrest Type`)
-unique(arrests$Sex)
-```
+
+## Column {data-width="500"}
+
+### Cat-Cat
 
 ```{r}
 # contingency table of counts
@@ -107,7 +106,55 @@ glue("
 **Effect size**: Cramér's V = {round(cramers_v, 3)}
 ")
 ```
+```{r}
+covid <- read.csv("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4\\covid-19.csv")
+```
 
+## Column {data-width="500"}
+
+### Num-Num: Scatterplot
+
+```{r}
+covid_country <- aggregate(data = covid,
+                           cbind(daily_deaths_mean, daily_cases_mean) ~ Entity,
+                           sum)
+covid_country <- covid_country[covid_country$daily_deaths_mean > 0 &
+                                covid_country$daily_cases_mean > 0, ]
+
+# Scatter plot
+base <- ggplot(covid_country)
+vars <- base + aes(x = daily_cases_mean, y = daily_deaths_mean)
+geoms <- vars + geom_point()
+scat_text <- geoms + geom_text_repel(aes(label = Entity), size = 2)
+geoms_d <- vars + stat_density_2d(aes(fill = after_stat(density)),
+                                   geom = "raster",
+                                   contour = FALSE)
+scatDens <- geoms_d +
+  geom_text_repel(aes(label = Entity),
+                  min.segment.length = 0,
+                  color = "white",
+                  fontface = "bold",
+                  bg.color = "black",
+                  bg.r = .15,
+                  size = 3) +
+  scale_x_continuous(expand = c(0, 0), 
+                     labels = scales::comma) +  
+  scale_y_continuous(expand = c(0, 0),
+                     labels = scales::comma) +  
+  scale_fill_viridis_c(option = "cividis", guide = "none") +
+  theme_light() +
+  labs(title = "As Daily Cases Rose, Daily Deaths Followed",
+       subtitle = "Each dot represents a country. In brighter areas, more countries are clustered together.",
+       x = "Average Daily Cases",
+       y = "Average Daily Deaths",
+       caption = "Source: COVID-19 Global Dataset\nNote: Only countries with recorded cases and deaths are shown.") +
+  theme(plot.title = element_text(size = 14, face = "bold"),
+        plot.subtitle = element_text(size = 10, color = "gray40"),
+        plot.caption = element_text(hjust = 0, color = "gray40"),
+        axis.title = element_text(size = 11))
+
+scatDens
+```
 
 
 
