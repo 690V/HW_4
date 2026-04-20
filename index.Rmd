@@ -1,0 +1,120 @@
+---
+title: "Cat-Cat Visualization"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+```{r}
+setwd("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4")
+```
+```{r}
+rm(list = ls())
+library(readxl)
+arrests <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx")
+sheet2 <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx", sheet = 2)
+```
+```{r}
+head(arrests)
+```
+```{r}
+names(arrests)
+```
+```{r}
+# checking data types
+str(arrests,width = 50,strict.width='cut')
+```
+```{r}
+unique(arrests$Race)
+unique(arrests$`Arrest Type`)
+unique(arrests$Sex)
+```
+
+```{r}
+# contingency table of counts
+# independent variable in the columns
+# dependent variable in the rows
+(ArrestTypeSex = table(arrests$Sex, arrests$`Arrest Type`))
+```
+```{r}
+library(magrittr) # for %>%
+(ArrestTypeSex_mgCol=prop.table(ArrestTypeSex,
+                            margin = 2)%>%round(.,3))
+```
+
+```{r}
+SexArrestType = table(arrests$Sex, arrests$`Arrest Type`)
+SexArrestType_mgCol = prop.table(SexArrestType,
+                            margin = 2) %>% round(., 3)
+SexArrestType_mgCol
+
+
+#making a data frame from the contingency table
+ArrestTypeSexDF=as.data.frame(ArrestTypeSex)
+names(ArrestTypeSexDF)=c("Sex","Arrest_Type","counts")
+
+#adding marginal shares as percentages:
+ArrestTypeSexDF$pctCol=100*as.data.frame(ArrestTypeSex_mgCol)[,3]
+ArrestTypeSexDF
+
+```
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+# stacked bar chart
+base3 = ggplot(data = ArrestTypeSexDF,
+               aes(x = Arrest_Type, y = pctCol,
+                   fill = reorder(Sex, pctCol)))
+
+barStacked = base3 + geom_bar(stat = "identity", position = 'stack')
+
+barStacked_annot = barStacked +
+  geom_text(size = 4,
+            color = ifelse(ArrestTypeSexDF$pctCol < 25, "white", "black"),
+            position = position_stack(vjust = 0.5),
+            aes(label = paste0(pctCol, '%')))
+
+barStacked_final = barStacked_annot + scale_fill_viridis_d(option = "cividis") +
+  theme_minimal() +
+  labs(title = "Arrest Type Distribution by Sex",
+       subtitle = "Massachusetts Arrest Data",
+       x = "Arrest Type",
+       y = "",
+       fill = "Sex",
+       caption = "Source: Mass Arrests Dataset") +
+  theme(axis.text.y = element_blank())
+
+barStacked_final
+```
+
+```{r}
+library(vcd)
+# chi-square test
+chisq_test <- chisq.test(ArrestTypeSex)
+cramers_v <- vcd::assocstats(ArrestTypeSex)$cramer
+
+library(glue)
+glue("
+### Chi-square Test Results
+**Test of independence**: χ²({chisq_test$parameter}) = {round(chisq_test$statistic, 1)}, p < {ifelse(chisq_test$p.value < 0.001, '0.001', round(chisq_test$p.value, 3))}
+**Effect size**: Cramér's V = {round(cramers_v, 3)}
+")
+```
+
+
+
+
+
+
+
+
+
+
+
