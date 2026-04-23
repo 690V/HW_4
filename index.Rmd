@@ -29,23 +29,21 @@ arrests <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrest
 sheet2 <- read_excel("C:/Users/bella/OneDrive/UMass/DACSS_690V/HW_4/Mass_Arrests.xlsx", sheet = 2)
 ```
 
-## Column {data-width="500"}
 
-### Cat-Cat
 
-```{r}
+```{r, include=FALSE}
 # contingency table of counts
 # independent variable in the columns
 # dependent variable in the rows
 (ArrestTypeSex = table(arrests$Sex, arrests$`Arrest Type`))
 ```
-```{r}
+```{r, include=FALSE}
 library(magrittr) # for %>%
 (ArrestTypeSex_mgCol=prop.table(ArrestTypeSex,
                             margin = 2)%>%round(.,3))
 ```
 
-```{r}
+```{r, include=FALSE}
 SexArrestType = table(arrests$Sex, arrests$`Arrest Type`)
 SexArrestType_mgCol = prop.table(SexArrestType,
                             margin = 2) %>% round(., 3)
@@ -65,6 +63,10 @@ ArrestTypeSexDF
 ```{r}
 library(ggplot2)
 ```
+
+## Column {data-width="500"}
+
+### Cat-Cat
 
 ```{r}
 # stacked bar chart
@@ -179,13 +181,6 @@ vioBox <- baseBox +
 
 vioBox
 
-# stat test
-kruskal_test <- kruskal.test(Age ~ `Arrest Type`, data = arrests_age)
-
-glue("
-Kruskal-Wallis Test Results
-χ²({kruskal_test$parameter}) = {round(kruskal_test$statistic, 1)}, p < {ifelse(kruskal_test$p.value < 0.001, '0.001', round(kruskal_test$p.value, 3))}
-")
 ```
 
 ## Column {data-width="500"}
