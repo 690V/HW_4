@@ -93,19 +93,7 @@ barStacked_final = barStacked_annot + scale_fill_viridis_d(option = "cividis") +
 barStacked_final
 ```
 
-```{r}
-library(vcd)
-# chi-square test
-chisq_test <- chisq.test(ArrestTypeSex)
-cramers_v <- vcd::assocstats(ArrestTypeSex)$cramer
 
-library(glue)
-glue("
-### Chi-square Test Results
-**Test of independence**: χ²({chisq_test$parameter}) = {round(chisq_test$statistic, 1)}, p < {ifelse(chisq_test$p.value < 0.001, '0.001', round(chisq_test$p.value, 3))}
-**Effect size**: Cramér's V = {round(cramers_v, 3)}
-")
-```
 ```{r}
 covid <- read.csv("C:\\Users\\bella\\OneDrive\\UMass\\DACSS_690V\\HW_4\\covid-19.csv")
 ```
@@ -156,6 +144,99 @@ scatDens <- geoms_d +
 scatDens
 ```
 
+## Column {data-width="500"}
+
+### Num-Cat 
+```{r}
+arrests_age <- arrests[arrests$Age > 0, ]
+
+# Setup
+baseBox <- ggplot(data = arrests_age,
+                  aes(y = Age))
+
+boxPlot <- baseBox +
+  geom_boxplot(aes(x = reorder(`Arrest Type`, Age, median))) +
+  coord_flip() +
+  theme_light() +
+  labs(title = "Age Varies by Arrest Type",
+       x = "Arrest Type",
+       y = "Age",
+       caption = "Source: Mass Arrests Dataset")
+
+# plot 2
+vioBox <- baseBox +
+  geom_violin(aes(x = `Arrest Type`),
+              fill = "orange", trim = FALSE) +
+  geom_boxplot(aes(x = `Arrest Type`),
+               fill = NA, color = "red", width = 0.1) +
+  coord_flip() +
+  theme_light() +
+  labs(title = "Age Distribution Varies Across Arrest Types",
+       subtitle = "Orange = distribution shape, Red = median and spread",
+       x = "Arrest Type",
+       y = "Age",
+       caption = "Source: Mass Arrests Dataset")
+
+vioBox
+
+# stat test
+kruskal_test <- kruskal.test(Age ~ `Arrest Type`, data = arrests_age)
+
+glue("
+Kruskal-Wallis Test Results
+χ²({kruskal_test$parameter}) = {round(kruskal_test$statistic, 1)}, p < {ifelse(kruskal_test$p.value < 0.001, '0.001', round(kruskal_test$p.value, 3))}
+")
+```
+
+## Column {data-width="500"}
+
+### Improved Multivariate Plot
+
+
+```{r}
+library(readxl)
+library(reshape2)
+library(ggpubr)
+
+# data
+download.file("https://github.com/DACSS-Visual/tabular_multivar/raw/main/data/safeCities_ecoUI.xlsx",
+              destfile = "safeCities_ecoUI.xlsx", mode = "wb")
+
+safeALL <- read_excel("safeCities_ecoUI.xlsx")
+
+drop <- c("Overall_Score")
+keep <- setdiff(names(safeALL), drop)
+safe <- safeALL[, keep]
+
+# reshape to long format
+safeL <- melt(safe, id.vars = 'city')
+
+# original
+original <- ggplot(data = safeL,
+                   aes(x = variable, y = city)) +
+  geom_tile(aes(fill = value)) +
+  labs(title = "Original Plot", x = "", y = "") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size = 5),
+        axis.text.y = element_text(size = 5))
+
+# improved
+improved <- ggplot(data = safeL) +
+  aes(x = reorder(variable, value, FUN = median),
+      y = reorder(city, value, FUN = median)) +
+  geom_tile(aes(fill = value)) +
+  scale_fill_viridis_c(option = "cividis", name = "Score") +
+  labs(title = "Safety and Sustainability Scores by City and Indicator",
+       subtitle = "Cities and indicators ordered by median score",
+       x = "", y = "",
+       caption = "Source: Safe Cities & Eco UI Index") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),  
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(size = 7),
+        plot.title = element_text(face = "bold", size = 12),
+        plot.subtitle = element_text(size = 9, color = "gray40"))
+ggarrange(original, improved, ncol = 2, widths = c(1, 1.3))
+```
 
 
 
