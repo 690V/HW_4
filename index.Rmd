@@ -52,11 +52,11 @@ SexArrestType_mgCol = prop.table(SexArrestType,
 SexArrestType_mgCol
 
 
-#making a data frame from the contingency table
+#data frame from the contingency table
 ArrestTypeSexDF=as.data.frame(ArrestTypeSex)
 names(ArrestTypeSexDF)=c("Sex","Arrest_Type","counts")
 
-#adding marginal shares as percentages:
+#percentages:
 ArrestTypeSexDF$pctCol=100*as.data.frame(ArrestTypeSex_mgCol)[,3]
 ArrestTypeSexDF
 
@@ -132,7 +132,7 @@ scatDens <- geoms_d +
   scale_fill_viridis_c(option = "cividis", guide = "none") +
   theme_light() +
   labs(title = "As Daily Cases Rose, Daily Deaths Followed",
-       subtitle = "Each dot represents a country. In brighter areas, more countries are clustered together.",
+       subtitle = "Each dot represents a country. Brighter areas have more clustered countries.",
        x = "Average Daily Cases",
        y = "Average Daily Deaths",
        caption = "Source: COVID-19 Global Dataset\nNote: Only countries with recorded cases and deaths are shown.") +
@@ -226,7 +226,7 @@ improved <- ggplot(data = safeL) +
   geom_tile(aes(fill = value)) +
   scale_fill_viridis_c(option = "cividis", name = "Score") +
   labs(title = "Safety and Sustainability Scores by City and Indicator",
-       subtitle = "Cities and indicators ordered by median score",
+       subtitle = "Safety Ordered by median score",
        x = "", y = "",
        caption = "Source: Safe Cities & Eco UI Index") +
   theme_minimal() +
